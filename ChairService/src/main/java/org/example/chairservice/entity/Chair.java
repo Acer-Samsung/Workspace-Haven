@@ -3,8 +3,7 @@ package org.example.chairservice.entity;
 import jakarta.persistence.*;
 import lombok.*;
 
-@Entity
-@Table(name = "chairs")
+@Entity(name = "chairs")
 @Getter
 @Setter
 @NoArgsConstructor
@@ -15,7 +14,7 @@ public class Chair {
     private Long id;
 
     private int floor;
-    private String room;
+    private int room;
 
     private boolean isAvailable;
 
