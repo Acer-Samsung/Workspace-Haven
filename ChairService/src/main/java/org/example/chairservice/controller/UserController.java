@@ -1,25 +1,35 @@
 package org.example.chairservice.controller;
 
+import lombok.extern.slf4j.Slf4j;
 import org.example.chairservice.entity.User;
 import org.example.chairservice.service.UserService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+@Slf4j
 @RestController
 @RequestMapping("/users")
 public class UserController {
     private final UserService userService;
 
-    @Autowired
     public UserController(UserService userService) {
         this.userService = userService;
     }
 
-    @PostMapping
-    public ResponseEntity<User> createUser(@RequestBody User user) {
+    @GetMapping("/check/{telegramUsername}")
+    public String checkUser(@PathVariable String telegramUsername) {
+        return userService.findUserByTelegramUsername(telegramUsername).isPresent() ? "success" : "failure";
+    }
+
+    @PostMapping("/register")
+    public ResponseEntity<?> createUser(@RequestBody User incominguser) {
+        User user = new User();
+        user.setName(incominguser.getName());
+        user.setTelegramUsername(incominguser.getTelegramUsername());
+        user.setAdmin(false);
+        log.info("Creating user: {}", user);
         return ResponseEntity.ok(userService.createUser(user));
     }
 

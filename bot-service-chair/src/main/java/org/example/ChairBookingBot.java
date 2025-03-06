@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
+import org.telegram.telegrambots.meta.api.methods.updatingmessages.DeleteMessage;
 import org.telegram.telegrambots.meta.api.objects.Contact;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.Update;
@@ -28,6 +29,7 @@ public class ChairBookingBot extends TelegramLongPollingBot {
     private final String botUsername = "ChairBookingAssistantBot";
     private final String botToken = "7656398985:AAFD1iiHhXbcnFLh3oMcMGQQln9F-D9TeiY";
     private final String bookingServiceUrl = "http://localhost:8080"; // Change to your service URL
+    private Map<Long, Integer> lastMessageMap = new HashMap<>();
     private final Map<Long, String> userStates = new HashMap<>();
 
     @Override
@@ -44,7 +46,16 @@ public class ChairBookingBot extends TelegramLongPollingBot {
         return sendGetRequest(bookingServiceUrl + "/chairs/mybooking/" + username);
     }
 
-    private void sendMenu(long chatId, String username) {
+    private void sendMenu(Long chatId, String username) {
+        if (lastMessageMap.containsKey(chatId)) {
+            DeleteMessage deleteMessage = new DeleteMessage(chatId.toString(), lastMessageMap.get(chatId));
+            try {
+                execute(deleteMessage);
+            } catch (TelegramApiException e) {
+                e.printStackTrace();
+            }
+        }
+
         ReplyKeyboardRemove removeKeyboard = new ReplyKeyboardRemove();
         removeKeyboard.setRemoveKeyboard(true);
         SendMessage message = new SendMessage();
@@ -65,78 +76,12 @@ public class ChairBookingBot extends TelegramLongPollingBot {
         message.setReplyMarkup(markup);
 
         try {
-            execute(message);
+            Message execute = execute(message);
+            lastMessageMap.put(chatId, execute.getMessageId());
         } catch (TelegramApiException e) {
             e.printStackTrace();
         }
     }
-
-
-//    @Override
-//    public void onUpdateReceived(Update update) {
-//
-//        if (update.hasMessage()) {
-//            Message message = update.getMessage();
-//            long chatId = message.getChatId();
-//            User telegramUser = message.getFrom();
-//
-//            // If user sends contact, register them
-//            if (message.hasContact()) {
-//                registerUser(chatId, telegramUser, message.getContact());
-//                return;
-//            }
-//        }
-//
-//        if (update.hasMessage() && update.getMessage().hasText()) {
-//            String command = update.getMessage().getText();
-//            long chatId = update.getMessage().getChatId();
-//            String telegramUser = update.getMessage().getFrom().getUserName();
-//
-//            if (isUserRegistered(telegramUser)) {
-//                if (command.equals("/start")) {
-//                    sendMenu(chatId);
-//                }
-//            } else {
-//                requestContact(chatId);
-//            }
-//        } else if (update.hasCallbackQuery()) {
-//
-//            long chatId = update.getCallbackQuery().getMessage().getChatId();
-//            String telegramUser = update.getCallbackQuery().getFrom().getUserName();
-//
-//            if (!isUserRegistered(telegramUser)) {
-//                sendMessage(chatId, "❌ You are not registered. Please send your contact to register first.");
-//                return;
-//            }
-//
-//            String callbackData = update.getCallbackQuery().getData();
-//
-//
-//            switch (callbackData) {
-//                case "view_chairs":
-//                    sendChairsList(chatId);
-//                    break;
-//                case "book_chair":
-//                    bookChair(chatId, telegramUser, 4);
-//                    break;
-//                case "cancel_booking":
-//                    cancelBooking(chatId, telegramUser, 4);
-//                    break;
-//                case "my_booking":
-//                    checkBooking(telegramUser, chatId);
-//                    break;
-//                case "check_availability":
-//                    checkChairAvailability(chatId, 4);
-//                    break;
-//                case "get_booked_chairs":
-//                    getAllBookedChairs(chatId);
-//                    break;
-//                case "remove_chair":
-//                    removeChair(chatId, 1);
-//                    break;
-//            }
-//        }
-//    }
 
     @Override
     public void onUpdateReceived(Update update) {
@@ -294,6 +239,16 @@ public class ChairBookingBot extends TelegramLongPollingBot {
     }
 
     public void sendMessage(long chatId, String text, ReplyKeyboardRemove keyboard) {
+
+        if (lastMessageMap.containsKey(chatId)) {
+            DeleteMessage deleteMessage = new DeleteMessage(String.valueOf(chatId), lastMessageMap.get(chatId));
+            try {
+                execute(deleteMessage);
+            } catch (TelegramApiException e) {
+                e.printStackTrace();
+            }
+        }
+
         SendMessage message = new SendMessage();
         message.setChatId(String.valueOf(chatId));
         message.setText(text);
@@ -303,7 +258,8 @@ public class ChairBookingBot extends TelegramLongPollingBot {
         }
 
         try {
-            execute(message); // Sending the message
+            Message execute = execute(message);// Sending the message
+            lastMessageMap.put(chatId, execute.getMessageId());
         } catch (TelegramApiException e) {
             e.printStackTrace();
         }
@@ -324,7 +280,8 @@ public class ChairBookingBot extends TelegramLongPollingBot {
 
 // Parse JSON response into a list of Chair objects
             ObjectMapper objectMapper = new ObjectMapper();
-            List<Chair> chairs = objectMapper.readValue(response, new TypeReference<List<Chair>>() {});
+            List<Chair> chairs = objectMapper.readValue(response, new TypeReference<List<Chair>>() {
+            });
 
 // Sort chairs by ID
             chairs.sort(Comparator.comparingLong(Chair::getId));
@@ -394,6 +351,16 @@ public class ChairBookingBot extends TelegramLongPollingBot {
 
 
     private void sendMessage(Long chatId, String text) {
+
+//        if (lastMessageMap.containsKey(chatId)) {
+//            DeleteMessage deleteMessage = new DeleteMessage(chatId.toString(), lastMessageMap.get(chatId));
+//            try {
+//                execute(deleteMessage);
+//            } catch (TelegramApiException e) {
+//                e.printStackTrace();
+//            }
+//        }
+
         int maxLength = 4000; // Keep under Telegram’s 4096 limit
         int start = 0;
 

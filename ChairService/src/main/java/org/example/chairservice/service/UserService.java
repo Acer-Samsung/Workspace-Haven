@@ -2,7 +2,6 @@ package org.example.chairservice.service;
 
 import org.example.chairservice.entity.User;
 import org.example.chairservice.repositories.UserRepository;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -13,13 +12,16 @@ public class UserService {
 
     private final UserRepository userRepository;
 
-    @Autowired
     public UserService(UserRepository userRepository) {
         this.userRepository = userRepository;
     }
 
-    public User createUser(User user) {
-        return userRepository.save(user);
+    public String createUser(User user) {
+        if (userRepository.findByTelegramUsername(user.getTelegramUsername()).isPresent()) {
+            return "User already exists";
+        }
+        userRepository.save(user);
+        return "success";
     }
 
     public Optional<User> findUserByTelegramUsername(String telegramUsername) {
