@@ -6,7 +6,7 @@ import lombok.Data;
 public class Chair {
     private Long id;
     private int floor;
-    private String room;
+    private int room;
     private String holder;
     private boolean available;
 }
