@@ -26,9 +26,9 @@ import java.io.OutputStream;
 import java.net.URL;
 
 public class ChairBookingBot extends TelegramLongPollingBot {
-    private final String botUsername = "ChairBookingAssistantBot";
-    private final String botToken = "7656398985:AAFD1iiHhXbcnFLh3oMcMGQQln9F-D9TeiY";
-    private final String bookingServiceUrl = "http://localhost:8080"; // Change to your service URL
+    private final String botUsername = "UR BOT USERNAME";
+    private final String botToken = "UR BOT TOKEN";
+    private final String bookingServiceUrl = "URL TO SEND REQUESTS EXAMPLE: http://localhost:8080"; // Change to your service URL
     private Map<Long, Integer> lastMessageMap = new HashMap<>();
     private final Map<Long, String> userStates = new HashMap<>();
 

@@ -91,11 +91,6 @@ public class ChairService {
         return chairRepository.save(chair);
     }
 
-    // Get all available chairs
-//    public List<Chair> getAllChairs() {
-//        return chairRepository.findAll();
-//    }
-
     public List<Chair> getAllChairs() {
         return chairRepository.findByHolderIsNull();
     }
