@@ -39,7 +39,7 @@ This bot was created to solve a problem I noticed during my internship at Click.
 Feel free to contribute by submitting issues or pull requests!
 
 ## License
-[Specify your license, e.g., MIT, Apache, etc.]
+-Apache 2.0
 
 ---
 ### Author
